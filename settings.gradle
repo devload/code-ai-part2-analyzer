@@ -1,7 +1,8 @@
-rootProject.name = 'mini-ai'
+rootProject.name = 'code-ai'
 
 include 'mini-ai-core'
 include 'mini-ai-tokenizer-simple'
+include 'code-ai-tokenizer'
 include 'mini-ai-model-ngram'
 include 'mini-ai-server'
 include 'mini-ai-cli'
