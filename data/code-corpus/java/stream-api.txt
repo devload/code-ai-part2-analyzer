@@ -1,0 +1,141 @@
+// Stream API Patterns
+
+// filter
+List<User> activeUsers = users.stream()
+    .filter(user -> user.isActive())
+    .collect(Collectors.toList());
+
+List<String> longNames = names.stream()
+    .filter(name -> name.length() > 5)
+    .collect(Collectors.toList());
+
+// map
+List<String> userNames = users.stream()
+    .map(User::getName)
+    .collect(Collectors.toList());
+
+List<Integer> lengths = strings.stream()
+    .map(String::length)
+    .collect(Collectors.toList());
+
+List<UserDto> dtos = users.stream()
+    .map(user -> new UserDto(user.getName(), user.getEmail()))
+    .collect(Collectors.toList());
+
+// flatMap
+List<String> allWords = sentences.stream()
+    .flatMap(sentence -> Arrays.stream(sentence.split(" ")))
+    .collect(Collectors.toList());
+
+// sorted
+List<User> sortedUsers = users.stream()
+    .sorted(Comparator.comparing(User::getName))
+    .collect(Collectors.toList());
+
+List<User> sortedByAge = users.stream()
+    .sorted(Comparator.comparingInt(User::getAge).reversed())
+    .collect(Collectors.toList());
+
+// distinct
+List<String> uniqueNames = names.stream()
+    .distinct()
+    .collect(Collectors.toList());
+
+// limit and skip
+List<User> topFive = users.stream()
+    .limit(5)
+    .collect(Collectors.toList());
+
+List<User> afterSkip = users.stream()
+    .skip(10)
+    .limit(5)
+    .collect(Collectors.toList());
+
+// findFirst and findAny
+Optional<User> firstUser = users.stream()
+    .filter(u -> u.getAge() > 18)
+    .findFirst();
+
+Optional<User> anyUser = users.stream()
+    .filter(u -> u.isActive())
+    .findAny();
+
+// anyMatch, allMatch, noneMatch
+boolean hasAdmin = users.stream()
+    .anyMatch(u -> u.getRole().equals("ADMIN"));
+
+boolean allActive = users.stream()
+    .allMatch(User::isActive);
+
+boolean noneDeleted = users.stream()
+    .noneMatch(User::isDeleted);
+
+// count
+long activeCount = users.stream()
+    .filter(User::isActive)
+    .count();
+
+// reduce
+int sum = numbers.stream()
+    .reduce(0, Integer::sum);
+
+Optional<Integer> max = numbers.stream()
+    .reduce(Integer::max);
+
+String concatenated = strings.stream()
+    .reduce("", (a, b) -> a + b);
+
+// collect to different collections
+Set<String> nameSet = users.stream()
+    .map(User::getName)
+    .collect(Collectors.toSet());
+
+Map<Long, User> userMap = users.stream()
+    .collect(Collectors.toMap(User::getId, Function.identity()));
+
+Map<String, List<User>> groupedByRole = users.stream()
+    .collect(Collectors.groupingBy(User::getRole));
+
+Map<Boolean, List<User>> partitioned = users.stream()
+    .collect(Collectors.partitioningBy(User::isActive));
+
+String joined = names.stream()
+    .collect(Collectors.joining(", "));
+
+// statistics
+IntSummaryStatistics stats = users.stream()
+    .mapToInt(User::getAge)
+    .summaryStatistics();
+
+double average = users.stream()
+    .mapToInt(User::getAge)
+    .average()
+    .orElse(0.0);
+
+// parallel stream
+List<Result> results = items.parallelStream()
+    .map(this::process)
+    .collect(Collectors.toList());
+
+// peek for debugging
+List<User> processed = users.stream()
+    .filter(User::isActive)
+    .peek(u -> System.out.println("Processing: " + u.getName()))
+    .map(this::transform)
+    .collect(Collectors.toList());
+
+// Optional with stream
+Optional<String> result = Optional.ofNullable(value)
+    .map(String::toUpperCase)
+    .filter(s -> s.length() > 3);
+
+// Chaining operations
+List<String> processedNames = users.stream()
+    .filter(u -> u.getAge() >= 18)
+    .filter(User::isActive)
+    .sorted(Comparator.comparing(User::getName))
+    .map(User::getName)
+    .map(String::toUpperCase)
+    .distinct()
+    .limit(10)
+    .collect(Collectors.toList());

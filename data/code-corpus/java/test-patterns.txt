@@ -1,0 +1,246 @@
+// JUnit 5 Test Patterns
+
+@Test
+void shouldReturnTrueWhenConditionIsMet() {
+    boolean result = service.check(validInput);
+    assertTrue(result);
+}
+
+@Test
+void shouldReturnFalseWhenConditionIsNotMet() {
+    boolean result = service.check(invalidInput);
+    assertFalse(result);
+}
+
+@Test
+void shouldReturnExpectedValue() {
+    String result = service.process("input");
+    assertEquals("expected", result);
+}
+
+@Test
+void shouldReturnNullWhenNotFound() {
+    User result = service.findById(999L);
+    assertNull(result);
+}
+
+@Test
+void shouldReturnNonNullValue() {
+    User result = service.findById(1L);
+    assertNotNull(result);
+}
+
+@Test
+void shouldThrowExceptionWhenInvalid() {
+    assertThrows(IllegalArgumentException.class, () -> {
+        service.process(null);
+    });
+}
+
+@Test
+void shouldThrowExceptionWithMessage() {
+    Exception exception = assertThrows(NotFoundException.class, () -> {
+        service.findById(999L);
+    });
+    assertEquals("User not found", exception.getMessage());
+}
+
+@Test
+void shouldContainExpectedElements() {
+    List<String> result = service.getItems();
+    assertAll(
+        () -> assertTrue(result.contains("item1")),
+        () -> assertTrue(result.contains("item2")),
+        () -> assertEquals(2, result.size())
+    );
+}
+
+@Test
+@DisplayName("should process valid input correctly")
+void testValidInput() {
+    Result result = service.process(validInput);
+    assertThat(result).isNotNull();
+    assertThat(result.getValue()).isEqualTo("expected");
+}
+
+// Parameterized Tests
+@ParameterizedTest
+@ValueSource(strings = {"a", "b", "c"})
+void shouldAcceptValidValues(String value) {
+    assertTrue(validator.isValid(value));
+}
+
+@ParameterizedTest
+@CsvSource({
+    "1, 2, 3",
+    "4, 5, 9",
+    "10, 20, 30"
+})
+void shouldAddNumbers(int a, int b, int expected) {
+    assertEquals(expected, calculator.add(a, b));
+}
+
+@ParameterizedTest
+@MethodSource("provideTestCases")
+void shouldProcessTestCases(String input, String expected) {
+    assertEquals(expected, service.process(input));
+}
+
+static Stream<Arguments> provideTestCases() {
+    return Stream.of(
+        Arguments.of("input1", "output1"),
+        Arguments.of("input2", "output2")
+    );
+}
+
+// Lifecycle methods
+@BeforeEach
+void setUp() {
+    service = new UserService(mockRepository);
+}
+
+@AfterEach
+void tearDown() {
+    database.clear();
+}
+
+@BeforeAll
+static void setUpClass() {
+    testContainer.start();
+}
+
+@AfterAll
+static void tearDownClass() {
+    testContainer.stop();
+}
+
+// Mockito patterns
+@ExtendWith(MockitoExtension.class)
+class UserServiceTest {
+
+    @Mock
+    private UserRepository userRepository;
+
+    @InjectMocks
+    private UserService userService;
+
+    @Test
+    void shouldFindUserById() {
+        User user = new User(1L, "John");
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        Optional<User> result = userService.findById(1L);
+
+        assertTrue(result.isPresent());
+        assertEquals("John", result.get().getName());
+        verify(userRepository).findById(1L);
+    }
+
+    @Test
+    void shouldSaveUser() {
+        User user = new User(null, "John");
+        User saved = new User(1L, "John");
+        when(userRepository.save(any(User.class))).thenReturn(saved);
+
+        User result = userService.create(user);
+
+        assertNotNull(result.getId());
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void shouldDeleteUser() {
+        doNothing().when(userRepository).deleteById(1L);
+
+        userService.delete(1L);
+
+        verify(userRepository).deleteById(1L);
+    }
+
+    @Test
+    void shouldThrowWhenUserNotFound() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> {
+            userService.getUser(999L);
+        });
+    }
+}
+
+// ArgumentCaptor
+@Test
+void shouldCaptureArgument() {
+    ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+
+    userService.create("John", "john@email.com");
+
+    verify(userRepository).save(captor.capture());
+    User captured = captor.getValue();
+    assertEquals("John", captured.getName());
+    assertEquals("john@email.com", captured.getEmail());
+}
+
+// Verify interactions
+verify(mock).method();
+verify(mock, times(2)).method();
+verify(mock, never()).method();
+verify(mock, atLeast(1)).method();
+verify(mock, atMost(3)).method();
+verifyNoMoreInteractions(mock);
+
+// Spring Boot Test
+@SpringBootTest
+@AutoConfigureMockMvc
+class UserControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private UserService userService;
+
+    @Test
+    void shouldReturnUser() throws Exception {
+        User user = new User(1L, "John");
+        when(userService.findById(1L)).thenReturn(Optional.of(user));
+
+        mockMvc.perform(get("/api/users/1"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.name").value("John"));
+    }
+
+    @Test
+    void shouldCreateUser() throws Exception {
+        User user = new User(1L, "John");
+        when(userService.create(any())).thenReturn(user);
+
+        mockMvc.perform(post("/api/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"John\",\"email\":\"john@email.com\"}"))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.id").value(1));
+    }
+
+    @Test
+    void shouldReturnNotFound() throws Exception {
+        when(userService.findById(999L)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/users/999"))
+            .andExpect(status().isNotFound());
+    }
+}
+
+// AssertJ fluent assertions
+assertThat(result).isNotNull();
+assertThat(result).isEqualTo(expected);
+assertThat(list).hasSize(3);
+assertThat(list).contains("item");
+assertThat(list).containsExactly("a", "b", "c");
+assertThat(list).isEmpty();
+assertThat(string).startsWith("prefix");
+assertThat(string).endsWith("suffix");
+assertThat(string).contains("substring");
+assertThat(number).isGreaterThan(5);
+assertThat(number).isBetween(1, 10);
+assertThat(optional).isPresent();
+assertThat(optional).isEmpty();

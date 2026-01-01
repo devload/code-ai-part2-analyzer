@@ -1,0 +1,160 @@
+// String operations
+String trimmed = text.trim();
+String upper = text.toUpperCase();
+String lower = text.toLowerCase();
+boolean empty = text.isEmpty();
+boolean blank = text.isBlank();
+boolean contains = text.contains("search");
+boolean starts = text.startsWith("prefix");
+boolean ends = text.endsWith("suffix");
+String replaced = text.replace("old", "new");
+String[] parts = text.split(",");
+String joined = String.join(", ", list);
+String formatted = String.format("Hello %s, you are %d years old", name, age);
+
+// StringBuilder
+StringBuilder sb = new StringBuilder();
+sb.append("Hello ");
+sb.append(name);
+sb.append("!");
+String result = sb.toString();
+
+// Collections initialization
+List<String> list = new ArrayList<>();
+List<String> immutable = List.of("a", "b", "c");
+List<String> fromArray = Arrays.asList("a", "b", "c");
+
+Map<String, Integer> map = new HashMap<>();
+Map<String, Integer> immutableMap = Map.of("a", 1, "b", 2);
+
+Set<String> set = new HashSet<>();
+Set<String> immutableSet = Set.of("a", "b", "c");
+
+// Collection operations
+list.add(item);
+list.addAll(otherList);
+list.remove(item);
+list.removeIf(i -> i.isEmpty());
+list.clear();
+list.contains(item);
+list.indexOf(item);
+list.size();
+list.isEmpty();
+list.get(0);
+list.set(0, newValue);
+
+Collections.sort(list);
+Collections.reverse(list);
+Collections.shuffle(list);
+Collections.max(list);
+Collections.min(list);
+Collections.frequency(list, item);
+
+// Map operations
+map.put(key, value);
+map.putAll(otherMap);
+map.get(key);
+map.getOrDefault(key, defaultValue);
+map.remove(key);
+map.containsKey(key);
+map.containsValue(value);
+map.keySet();
+map.values();
+map.entrySet();
+map.computeIfAbsent(key, k -> createValue());
+map.computeIfPresent(key, (k, v) -> updateValue(v));
+map.merge(key, value, (oldV, newV) -> oldV + newV);
+
+// Date/Time
+LocalDate today = LocalDate.now();
+LocalTime now = LocalTime.now();
+LocalDateTime dateTime = LocalDateTime.now();
+ZonedDateTime zoned = ZonedDateTime.now();
+Instant instant = Instant.now();
+
+LocalDate date = LocalDate.of(2024, 1, 15);
+LocalDate parsed = LocalDate.parse("2024-01-15");
+
+LocalDate tomorrow = today.plusDays(1);
+LocalDate nextMonth = today.plusMonths(1);
+LocalDate lastYear = today.minusYears(1);
+
+boolean isBefore = date1.isBefore(date2);
+boolean isAfter = date1.isAfter(date2);
+long daysBetween = ChronoUnit.DAYS.between(date1, date2);
+
+DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+String formatted = dateTime.format(formatter);
+LocalDateTime parsed = LocalDateTime.parse(text, formatter);
+
+// File operations
+Path path = Path.of("file.txt");
+Path path = Paths.get("directory", "file.txt");
+String content = Files.readString(path);
+List<String> lines = Files.readAllLines(path);
+Files.writeString(path, content);
+Files.write(path, lines);
+Files.exists(path);
+Files.isDirectory(path);
+Files.createDirectories(path);
+Files.delete(path);
+Files.copy(source, target);
+Files.move(source, target);
+
+try (BufferedReader reader = Files.newBufferedReader(path)) {
+    String line;
+    while ((line = reader.readLine()) != null) {
+        process(line);
+    }
+}
+
+try (BufferedWriter writer = Files.newBufferedWriter(path)) {
+    writer.write("content");
+    writer.newLine();
+}
+
+// JSON with Jackson
+ObjectMapper mapper = new ObjectMapper();
+String json = mapper.writeValueAsString(object);
+User user = mapper.readValue(json, User.class);
+List<User> users = mapper.readValue(json, new TypeReference<List<User>>() {});
+
+// JSON with Gson
+Gson gson = new Gson();
+String json = gson.toJson(object);
+User user = gson.fromJson(json, User.class);
+
+// HTTP Client (Java 11+)
+HttpClient client = HttpClient.newHttpClient();
+HttpRequest request = HttpRequest.newBuilder()
+    .uri(URI.create("https://api.example.com/users"))
+    .header("Content-Type", "application/json")
+    .GET()
+    .build();
+HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+int status = response.statusCode();
+String body = response.body();
+
+// Logging
+private static final Logger log = LoggerFactory.getLogger(MyClass.class);
+log.debug("Debug message: {}", value);
+log.info("Info message");
+log.warn("Warning: {}", message);
+log.error("Error occurred", exception);
+
+// Assertions
+assert condition : "Error message";
+Objects.requireNonNull(param, "param must not be null");
+
+// Random
+Random random = new Random();
+int randomInt = random.nextInt(100);
+double randomDouble = random.nextDouble();
+boolean randomBoolean = random.nextBoolean();
+List<Integer> shuffled = new ArrayList<>(list);
+Collections.shuffle(shuffled, random);
+
+// UUID
+UUID uuid = UUID.randomUUID();
+String uuidString = uuid.toString();
+UUID parsed = UUID.fromString(uuidString);

@@ -1,0 +1,101 @@
+// Optional Patterns
+
+// Creating Optional
+Optional<String> empty = Optional.empty();
+Optional<String> present = Optional.of("value");
+Optional<String> nullable = Optional.ofNullable(maybeNull);
+
+// Basic usage
+if (optional.isPresent()) {
+    String value = optional.get();
+    process(value);
+}
+
+optional.ifPresent(value -> process(value));
+optional.ifPresent(this::process);
+
+optional.ifPresentOrElse(
+    value -> process(value),
+    () -> handleEmpty()
+);
+
+// Default values
+String result = optional.orElse("default");
+String computed = optional.orElseGet(() -> computeDefault());
+String required = optional.orElseThrow();
+String custom = optional.orElseThrow(() -> new NotFoundException("Not found"));
+
+// Transformations
+Optional<Integer> length = optional.map(String::length);
+Optional<User> user = optional.map(id -> userRepository.findById(id));
+
+Optional<String> flat = optionalOptional.flatMap(Function.identity());
+Optional<Address> address = user.flatMap(User::getAddress);
+
+// Filtering
+Optional<String> filtered = optional.filter(s -> s.length() > 5);
+Optional<User> activeUser = user.filter(User::isActive);
+
+// Chaining
+String name = Optional.ofNullable(user)
+    .map(User::getProfile)
+    .map(Profile::getName)
+    .orElse("Unknown");
+
+int age = Optional.ofNullable(user)
+    .filter(User::isActive)
+    .map(User::getAge)
+    .orElse(0);
+
+// Converting to Stream
+Stream<String> stream = optional.stream();
+
+List<String> list = optionals.stream()
+    .flatMap(Optional::stream)
+    .collect(Collectors.toList());
+
+// Pattern: Avoid null checks
+// Before
+if (user != null && user.getAddress() != null && user.getAddress().getCity() != null) {
+    return user.getAddress().getCity();
+}
+return "Unknown";
+
+// After
+return Optional.ofNullable(user)
+    .map(User::getAddress)
+    .map(Address::getCity)
+    .orElse("Unknown");
+
+// Pattern: First non-empty
+Optional<String> result = first
+    .or(() -> second)
+    .or(() -> third);
+
+// Pattern: Handle both cases
+return optional
+    .map(value -> processSuccess(value))
+    .orElseGet(() -> processEmpty());
+
+// With repository
+public User findOrCreate(Long id) {
+    return userRepository.findById(id)
+        .orElseGet(() -> userRepository.save(new User()));
+}
+
+// With validation
+public void updateUser(Long id, UpdateRequest request) {
+    User user = userRepository.findById(id)
+        .orElseThrow(() -> new UserNotFoundException(id));
+    user.setName(request.getName());
+    userRepository.save(user);
+}
+
+// Combining optionals
+Optional<String> combined = optionalA
+    .flatMap(a -> optionalB.map(b -> a + b));
+
+// Pattern: Return Optional from method
+public Optional<User> findByEmail(String email) {
+    return Optional.ofNullable(userMap.get(email));
+}
