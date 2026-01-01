@@ -12,14 +12,15 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 /**
- * Mini AI CLI
- * Step 6: 명령줄 인터페이스
+ * Code AI CLI
+ * 코드 특화 AI 어시스턴트 CLI
  */
-@Command(name = "mini-ai", version = "1.0",
-         description = "Mini AI CLI - Bigram 언어 모델 CLI",
+@Command(name = "code-ai", version = "2.0",
+         description = "Code AI CLI - 코드 자동완성 및 생성",
          subcommands = {
              MiniAiCli.Train.class,
              MiniAiCli.Run.class,
+             MiniAiCli.Complete.class,
              MiniAiCli.Tokenize.class
          })
 public class MiniAiCli implements Callable<Integer> {
@@ -31,26 +32,38 @@ public class MiniAiCli implements Callable<Integer> {
 
     @Override
     public Integer call() {
-        System.out.println("Mini AI CLI");
-        System.out.println("사용법: mini-ai [command]");
+        System.out.println("🔧 Code AI CLI v2.0");
+        System.out.println("사용법: code-ai [command]");
         System.out.println("\n명령어:");
-        System.out.println("  train      - 모델 학습");
+        System.out.println("  train      - 모델 학습 (Bigram/Trigram, Code/Whitespace)");
         System.out.println("  run        - 텍스트 생성");
+        System.out.println("  complete   - 코드 자동완성");
         System.out.println("  tokenize   - 텍스트 토큰화");
+        System.out.println("\n예시:");
+        System.out.println("  code-ai train --corpus data/code.txt --model trigram --tokenizer code");
+        System.out.println("  code-ai complete \"public class User {\"");
         return 0;
     }
 
     /**
-     * train 명령어
+     * train 명령어 - Bigram/Trigram, Code/Whitespace 선택 가능
      */
-    @Command(name = "train", description = "모델 학습")
+    @Command(name = "train", description = "모델 학습 (Bigram/Trigram)")
     static class Train implements Callable<Integer> {
         @Option(names = {"--corpus"}, required = true, description = "Corpus 파일 경로")
         String corpusPath;
 
         @Option(names = {"--output"}, description = "Artifact 출력 경로",
-                defaultValue = "data/cli-bigram.json")
+                defaultValue = "data/code-model.json")
         String outputPath;
+
+        @Option(names = {"--model"}, description = "모델 타입 (bigram/trigram)",
+                defaultValue = "trigram")
+        String modelType;
+
+        @Option(names = {"--tokenizer"}, description = "토크나이저 (whitespace/code)",
+                defaultValue = "code")
+        String tokenizerType;
 
         @Override
         public Integer call() {
@@ -58,10 +71,14 @@ public class MiniAiCli implements Callable<Integer> {
                 System.out.println("🚀 모델 학습 시작...");
                 System.out.println("  Corpus: " + corpusPath);
                 System.out.println("  Output: " + outputPath);
+                System.out.println("  Model: " + modelType);
+                System.out.println("  Tokenizer: " + tokenizerType);
 
                 String json = gson.toJson(Map.of(
                     "corpusPath", corpusPath,
-                    "outputPath", outputPath
+                    "outputPath", outputPath,
+                    "modelType", modelType,
+                    "tokenizerType", tokenizerType
                 ));
 
                 Request request = new Request.Builder()
@@ -75,6 +92,8 @@ public class MiniAiCli implements Callable<Integer> {
 
                     if ("success".equals(result.get("status"))) {
                         System.out.println("\n✅ 학습 완료!");
+                        System.out.println("  Model: " + result.get("modelType"));
+                        System.out.println("  Tokenizer: " + result.get("tokenizer"));
                         System.out.println("  Vocabulary: " + result.get("vocabSize"));
                         System.out.println("  Latency: " + result.get("latencyMs") + "ms");
                     } else {
@@ -146,6 +165,62 @@ public class MiniAiCli implements Callable<Integer> {
             } catch (Exception e) {
                 System.err.println("❌ 오류: " + e.getMessage());
                 e.printStackTrace();
+                return 1;
+            }
+        }
+    }
+
+    /**
+     * complete 명령어 - 코드 자동완성
+     */
+    @Command(name = "complete", description = "코드 자동완성")
+    static class Complete implements Callable<Integer> {
+        @Parameters(index = "0", description = "완성할 코드 조각")
+        String code;
+
+        @Option(names = {"--tokens"}, description = "생성할 토큰 수", defaultValue = "10")
+        int maxTokens;
+
+        @Option(names = {"-n", "--count"}, description = "후보 개수", defaultValue = "3")
+        int count;
+
+        @Override
+        public Integer call() {
+            try {
+                System.out.println("🔧 코드 자동완성...");
+                System.out.println("  입력: " + code);
+                System.out.println();
+
+                for (int i = 0; i < count; i++) {
+                    Map<String, Object> requestMap = Map.of(
+                        "prompt", code,
+                        "maxTokens", maxTokens,
+                        "temperature", 1.0,
+                        "seed", System.currentTimeMillis() + i * 1000
+                    );
+
+                    String json = gson.toJson(requestMap);
+
+                    Request request = new Request.Builder()
+                        .url(API_BASE + "/generate")
+                        .post(RequestBody.create(json, JSON))
+                        .build();
+
+                    try (Response response = client.newCall(request).execute()) {
+                        String body = response.body().string();
+                        Map<String, Object> result = gson.fromJson(body, Map.class);
+
+                        String generatedText = (String) result.get("generatedText");
+                        Map<String, Object> usage = (Map<String, Object>) result.get("usage");
+
+                        System.out.println("  [" + (i + 1) + "] " + generatedText);
+                    }
+                }
+
+                return 0;
+            } catch (Exception e) {
+                System.err.println("❌ 오류: " + e.getMessage());
+                System.err.println("   서버가 실행 중인지 확인하세요: ./gradlew :mini-ai-server:bootRun");
                 return 1;
             }
         }
