@@ -1,0 +1,38 @@
+Mini AI CLI 데모 - Step 6
+========================================
+
+1. Tokenize 명령어
+$ ./gradlew :mini-ai-cli:run --args="tokenize 'hello world'"
+
+📌 토큰화 결과:
+  원본: "hello world"
+  토큰 수: 2
+  토큰: [hello, world]
+
+2. Train 명령어
+$ ./gradlew :mini-ai-cli:run --args="train --corpus data/sample-corpus.txt --output data/cli-bigram.json"
+
+🚀 모델 학습 시작...
+  Corpus: data/sample-corpus.txt
+  Output: data/cli-bigram.json
+
+✅ 학습 완료!
+  Vocabulary: 56
+  Latency: 8ms
+
+3. Run 명령어
+$ ./gradlew :mini-ai-cli:run --args="run -p 'the cat' --max-tokens 10 --seed 42"
+
+💬 텍스트 생성...
+  Prompt: "the cat"
+
+📝 생성 결과:
+  the cat I love love love natural language processing natural language is
+
+📊 Usage:
+  Input:  2 tokens
+  Output: 10 tokens
+  Total:  12 tokens
+
+========================================
+✅ 모든 CLI 명령어 동작 확인!

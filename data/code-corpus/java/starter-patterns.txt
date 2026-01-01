@@ -1,0 +1,166 @@
+public class User {
+private String name;
+private String email;
+private Long id;
+
+public User() {
+}
+
+public User(String name, String email) {
+this.name = name;
+this.email = email;
+}
+
+public String getName() {
+return name;
+}
+
+public void setName(String name) {
+this.name = name;
+}
+
+public String getEmail() {
+return email;
+}
+
+public void setEmail(String email) {
+this.email = email;
+}
+
+public Long getId() {
+return id;
+}
+
+public void setId(Long id) {
+this.id = id;
+}
+}
+
+public interface UserRepository {
+User findById(Long id);
+List<User> findAll();
+User save(User user);
+void delete(Long id);
+}
+
+public class UserService {
+private UserRepository userRepository;
+
+public UserService(UserRepository userRepository) {
+this.userRepository = userRepository;
+}
+
+public User getUserById(Long id) {
+return userRepository.findById(id);
+}
+
+public List<User> getAllUsers() {
+return userRepository.findAll();
+}
+
+public User createUser(User user) {
+return userRepository.save(user);
+}
+
+public void deleteUser(Long id) {
+userRepository.delete(id);
+}
+}
+
+for (int i = 0; i < list.size(); i++) {
+System.out.println(list.get(i));
+}
+
+for (String item : items) {
+process(item);
+}
+
+for (User user : users) {
+user.setActive(true);
+}
+
+if (value != null) {
+return value;
+}
+
+if (condition) {
+return true;
+} else {
+return false;
+}
+
+if (user == null) {
+throw new RuntimeException("User not found");
+}
+
+try {
+operation();
+} catch (Exception e) {
+e.printStackTrace();
+}
+
+try {
+User user = userService.findById(id);
+return user;
+} catch (Exception e) {
+logger.error("Error finding user", e);
+throw new RuntimeException(e);
+}
+
+while (condition) {
+doSomething();
+}
+
+while (iterator.hasNext()) {
+Item item = iterator.next();
+process(item);
+}
+
+switch (type) {
+case "A":
+handleA();
+break;
+case "B":
+handleB();
+break;
+default:
+handleDefault();
+}
+
+private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+
+@Autowired
+private UserService userService;
+
+@Override
+public String toString() {
+return "User{name=" + name + ", email=" + email + "}";
+}
+
+@GetMapping("/{id}")
+public ResponseEntity<User> getUser(@PathVariable Long id) {
+User user = userService.findById(id);
+return ResponseEntity.ok(user);
+}
+
+@PostMapping
+public ResponseEntity<User> createUser(@RequestBody User user) {
+User created = userService.save(user);
+return ResponseEntity.status(HttpStatus.CREATED).body(created);
+}
+
+public static void main(String[] args) {
+System.out.println("Hello World");
+}
+
+public static void main(String[] args) {
+SpringApplication.run(Application.class, args);
+}
+
+List<String> list = new ArrayList<>();
+Map<String, Integer> map = new HashMap<>();
+Set<String> set = new HashSet<>();
+
+String name = request.getParameter("name");
+String value = System.getProperty("key");
+String env = System.getenv("ENV_VAR");

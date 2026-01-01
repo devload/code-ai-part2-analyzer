@@ -1,0 +1,23 @@
+// mini-ai-cli: 명령줄 인터페이스
+
+plugins {
+    id 'application'
+}
+
+application {
+    mainClass = 'com.miniai.cli.MiniAiCli'
+}
+
+dependencies {
+    implementation project(':mini-ai-core')
+
+    // CLI 프레임워크
+    implementation 'info.picocli:picocli:4.7.5'
+    annotationProcessor 'info.picocli:picocli-codegen:4.7.5'
+
+    // HTTP 클라이언트
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+
+    // JSON 처리
+    implementation 'com.google.code.gson:gson:2.10.1'
+}

@@ -1,0 +1,63 @@
+> Task :mini-ai-core:compileJava UP-TO-DATE
+> Task :mini-ai-core:processResources NO-SOURCE
+> Task :mini-ai-core:classes UP-TO-DATE
+> Task :mini-ai-core:jar UP-TO-DATE
+> Task :mini-ai-tokenizer-simple:compileJava UP-TO-DATE
+> Task :mini-ai-tokenizer-simple:processResources NO-SOURCE
+> Task :mini-ai-tokenizer-simple:classes UP-TO-DATE
+> Task :mini-ai-tokenizer-simple:jar UP-TO-DATE
+> Task :mini-ai-model-ngram:compileJava
+> Task :mini-ai-model-ngram:processResources NO-SOURCE
+> Task :mini-ai-model-ngram:classes
+
+> Task :mini-ai-model-ngram:run
+============================================================
+Bigram 학습 데모 - Step 2
+============================================================
+Working directory: /Users/devload/aimaker/mini-ai-model-ngram
+Project root: /Users/devload/aimaker
+
+[1] 영어 Corpus 학습
+------------------------------------------------------------
+Corpus: /Users/devload/aimaker/data/sample-corpus.txt
+Tokenizer vocabulary: 56
+✅ 학습 완료: /Users/devload/aimaker/data/sample-bigram.json
+   Vocabulary: 56
+   Total tokens: 103
+   Total bigrams: 102
+
+=== Bigram 학습 결과 요약 ===
+Metadata(model=bigram, vocab=56, tokens=103, bigrams=102)
+
+가장 빈도 높은 Bigram (상위 5개):
+  [on] → [the] : 3회
+  [sat] → [on] : 3회
+  [the] → [world] : 3회
+  [the] → [cat] : 3회
+  [the] → [dog] : 3회
+
+[2] 한글 Corpus 학습
+------------------------------------------------------------
+Corpus: /Users/devload/aimaker/data/korean-corpus.txt
+Tokenizer vocabulary: 41
+✅ 학습 완료: /Users/devload/aimaker/data/korean-bigram.json
+   Vocabulary: 41
+   Total tokens: 47
+   Total bigrams: 46
+
+=== Bigram 학습 결과 요약 ===
+Metadata(model=bigram, vocab=41, tokens=47, bigrams=46)
+
+가장 빈도 높은 Bigram (상위 5개):
+  [미래를] → [위해] : 1회
+  [기분이] → [좋다] : 1회
+  [기분이] → [좋으면] : 1회
+  [것은] → [축복이다] : 1회
+  [행복하다는] → [것은] : 1회
+
+============================================================
+학습 완료!
+============================================================
+
+BUILD SUCCESSFUL in 391ms
+6 actionable tasks: 2 executed, 4 up-to-date

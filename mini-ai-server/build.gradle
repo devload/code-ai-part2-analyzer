@@ -1,0 +1,24 @@
+// mini-ai-server: Spring Boot REST API
+
+plugins {
+    id 'org.springframework.boot' version '3.2.0'
+    id 'io.spring.dependency-management' version '1.1.4'
+}
+
+dependencies {
+    implementation project(':mini-ai-core')
+    implementation project(':mini-ai-tokenizer-simple')
+    implementation project(':mini-ai-model-ngram')
+
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+// Step 0: 구현이 없으므로 bootJar 비활성화
+tasks.named('bootJar') {
+    enabled = false
+}
+
+tasks.named('jar') {
+    enabled = true
+}

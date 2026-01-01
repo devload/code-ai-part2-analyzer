@@ -1,0 +1,12 @@
+// mini-ai-tokenizer-simple: Tokenizer 구현체
+
+dependencies {
+    implementation project(':mini-ai-core')
+}
+
+test {
+    testLogging {
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+        showStandardStreams = true
+    }
+}

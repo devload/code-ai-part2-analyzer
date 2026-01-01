@@ -1,0 +1,74 @@
+Mini AI Server API 테스트 - Step 5
+========================================
+
+1. 서버 시작
+./gradlew :mini-ai-server:bootRun
+
+2. Health Check
+$ curl http://localhost:8080/v1/health | python3 -m json.tool
+{
+    "modelLoaded": false,
+    "status": "ok"
+}
+
+3. Train API 호출
+$ curl -X POST http://localhost:8080/v1/train \
+  -H "Content-Type: application/json" \
+  -d '{
+    "corpusPath": "/Users/devload/aimaker/data/sample-corpus.txt",
+    "outputPath": "/Users/devload/aimaker/data/api-bigram.json"
+  }' | python3 -m json.tool
+
+{
+    "vocabSize": 56,
+    "artifactPath": "/Users/devload/aimaker/data/api-bigram.json",
+    "message": "학습 완료",
+    "latencyMs": 8,
+    "status": "success"
+}
+
+4. Generate API 호출
+$ curl -X POST http://localhost:8080/v1/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "the cat",
+    "maxTokens": 10,
+    "temperature": 1.0,
+    "topK": 50,
+    "seed": 42
+  }' | python3 -m json.tool
+
+{
+    "generatedText": "the cat I love love love natural language processing natural language is",
+    "usage": {
+        "inputTokens": 2,
+        "outputTokens": 10,
+        "totalTokens": 12
+    },
+    "latencyMs": 0,
+    "model": "bigram-v1"
+}
+
+5. 다양한 파라미터 테스트
+$ curl -X POST http://localhost:8080/v1/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "I love",
+    "maxTokens": 5,
+    "temperature": 0.5,
+    "seed": 123
+  }'
+
+{
+    "generatedText": "I love natural language processing natural language",
+    "usage": {
+        "inputTokens": 2,
+        "outputTokens": 5,
+        "totalTokens": 7
+    },
+    "latencyMs": 1,
+    "model": "bigram-v1"
+}
+
+========================================
+✅ 모든 API 테스트 성공!

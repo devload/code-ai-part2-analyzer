@@ -1,0 +1,98 @@
+> Task :mini-ai-core:compileJava UP-TO-DATE
+> Task :mini-ai-core:processResources NO-SOURCE
+> Task :mini-ai-core:classes UP-TO-DATE
+> Task :mini-ai-core:jar UP-TO-DATE
+> Task :mini-ai-tokenizer-simple:compileJava UP-TO-DATE
+> Task :mini-ai-tokenizer-simple:processResources NO-SOURCE
+> Task :mini-ai-tokenizer-simple:classes UP-TO-DATE
+> Task :mini-ai-tokenizer-simple:jar UP-TO-DATE
+> Task :mini-ai-model-ngram:compileJava
+> Task :mini-ai-model-ngram:processResources NO-SOURCE
+> Task :mini-ai-model-ngram:classes
+
+> Task :mini-ai-model-ngram:run
+============================================================
+Usage 측정 데모 - Step 4
+============================================================
+
+[1] 기본 Usage 측정
+------------------------------------------------------------
+Prompt: "the cat"
+MaxTokens: 10
+
+Generated: the cat I love love love natural language processing natural language is
+
+Usage:
+  Input tokens:  2
+  Output tokens: 10
+  Total tokens:  12
+
+검증: input + output = 12 = total 12 ✓
+
+[2] MaxTokens 변화에 따른 Usage
+------------------------------------------------------------
+Prompt: "I love" (고정)
+
+MaxTokens 변화:
+MaxTokens    Input    Output   Total   
+----------------------------------------
+5            2        5        7       
+10           2        10       12      
+20           2        20       22      
+50           2        50       52      
+
+관찰:
+  - Input tokens는 항상 동일 (같은 prompt)
+  - Output tokens는 maxTokens에 비례
+  - Total = Input + Output
+
+[3] Prompt 길이에 따른 Usage
+------------------------------------------------------------
+MaxTokens: 5 (고정)
+
+Prompt 길이 변화:
+Prompt                    Input    Output   Total   
+-------------------------------------------------------
+"the"                     1        5        6       
+"the cat"                 2        5        7       
+"the cat sat on"          4        5        9       
+"the cat sat on th..."    6        5        11      
+
+관찰:
+  - Prompt가 길수록 Input tokens 증가
+  - Output은 maxTokens에 의해 제한
+  - Total tokens = Input + Output
+
+[4] 비용 계산 시뮬레이션 (GPT-4 가격 기준)
+------------------------------------------------------------
+시뮬레이션 (GPT-4 가격):
+  Input:  $0.03 / 1K tokens
+  Output: $0.06 / 1K tokens
+
+Prompt: "the quick brown fox"
+MaxTokens: 100
+
+Usage:
+  Input tokens:  4 tokens
+  Output tokens: 100 tokens
+  Total tokens:  104 tokens
+
+예상 비용:
+  Input cost:  $0.000120
+  Output cost: $0.006000
+  Total cost:  $0.006120
+
+1,000번 호출 시: $6.12
+10,000번 호출 시: $61.20
+
+💡 왜 토큰이 비용 단위인가?
+  - 토큰 수 = 모델 처리량
+  - 처리량 = 계산 비용 (GPU 시간)
+  - 따라서 토큰으로 과금
+
+============================================================
+데모 완료!
+============================================================
+
+BUILD SUCCESSFUL in 483ms
+6 actionable tasks: 2 executed, 4 up-to-date

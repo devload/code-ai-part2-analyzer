@@ -1,0 +1,72 @@
+> Task :mini-ai-core:compileJava UP-TO-DATE
+> Task :mini-ai-core:processResources NO-SOURCE
+> Task :mini-ai-core:classes UP-TO-DATE
+> Task :mini-ai-core:jar UP-TO-DATE
+> Task :mini-ai-tokenizer-simple:compileJava UP-TO-DATE
+> Task :mini-ai-tokenizer-simple:processResources NO-SOURCE
+> Task :mini-ai-tokenizer-simple:classes UP-TO-DATE
+> Task :mini-ai-tokenizer-simple:jar UP-TO-DATE
+> Task :mini-ai-model-ngram:compileJava
+> Task :mini-ai-model-ngram:processResources NO-SOURCE
+> Task :mini-ai-model-ngram:classes
+
+> Task :mini-ai-model-ngram:run
+============================================================
+Bigram 텍스트 생성 데모 - Step 3
+============================================================
+
+[1] 영어 모델 생성
+------------------------------------------------------------
+Model: BigramModel(vocab=56, bigrams=102)
+
+Prompt: "the cat"
+Parameters: maxTokens=10, temperature=1.0, topK=50, seed=42
+
+생성 결과:
+  Text: the cat I love love love natural language processing natural language is
+  Usage(input=2, output=10, total=12)
+  Latency: 2ms
+  Model: bigram-v1
+
+[2] 한글 모델 생성
+------------------------------------------------------------
+Model: BigramModel(vocab=41, bigrams=46)
+
+Prompt: "오늘은"
+Parameters: maxTokens=10, temperature=1.0, topK=50, seed=42
+
+생성 결과:
+  Text: 오늘은 날씨가 좋으면 노래를 부르면 행복하다 행복하다는 것은 축복이다 인공지능은 미래다
+  Usage(input=1, output=10, total=11)
+  Latency: 0ms
+  Model: bigram-v1
+
+[3] Temperature 효과 비교
+------------------------------------------------------------
+Prompt: "I love"
+비교: Temperature 변화에 따른 생성 결과
+
+  temp=0.1 : I love natural language processing natural language is powerful deep
+  temp=0.5 : I love natural language processing natural language is powerful deep
+  temp=1.0 : I love natural language processing natural language is powerful deep
+  temp=1.5 : I love natural language processing natural language is powerful deep
+  temp=2.0 : I love natural language processing natural language is powerful deep
+
+[4] Seed 재현성 테스트
+------------------------------------------------------------
+Prompt: "the"
+Seed: 12345
+동일한 seed로 3번 생성:
+
+  시도 1: the dog loves the dog the dog programming is the sky
+  시도 2: the dog loves the dog the dog programming is the sky
+  시도 3: the dog loves the dog the dog programming is the sky
+
+→ 모든 결과가 동일함 (재현 가능!)
+
+============================================================
+데모 완료!
+============================================================
+
+BUILD SUCCESSFUL in 503ms
+6 actionable tasks: 2 executed, 4 up-to-date

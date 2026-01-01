@@ -1,0 +1,77 @@
+> Task :mini-ai-tokenizer-simple:clean
+> Task :mini-ai-core:compileJava UP-TO-DATE
+> Task :mini-ai-core:processResources NO-SOURCE
+> Task :mini-ai-core:classes UP-TO-DATE
+> Task :mini-ai-core:jar UP-TO-DATE
+> Task :mini-ai-tokenizer-simple:compileJava
+> Task :mini-ai-tokenizer-simple:processResources NO-SOURCE
+> Task :mini-ai-tokenizer-simple:classes
+> Task :mini-ai-tokenizer-simple:compileTestJava
+> Task :mini-ai-tokenizer-simple:processTestResources NO-SOURCE
+> Task :mini-ai-tokenizer-simple:testClasses
+
+> Task :mini-ai-tokenizer-simple:test
+
+WhitespaceTokenizerTest > Vocabulary 크기 확인 PASSED
+
+WhitespaceTokenizerTest > 빈 텍스트 처리 PASSED
+
+WhitespaceTokenizerTest > 실제 문장 토큰화 예시 STANDARD_OUT
+
+    === 실제 문장 토큰화 ===
+    Vocabulary 크기: 12
+    문장: the fox jumps over the dog
+    토큰 수: 6
+    토큰 ID: [1, 11, 8, 2, 1, 10]
+      [0] 'the' -> ID 1
+      [1] 'fox' -> ID 11
+      [2] 'jumps' -> ID 8
+      [3] 'over' -> ID 2
+      [4] 'the' -> ID 1
+      [5] 'dog' -> ID 10
+
+WhitespaceTokenizerTest > 실제 문장 토큰화 예시 PASSED
+
+WhitespaceTokenizerTest > Unknown 토큰 처리 STANDARD_OUT
+
+    === Unknown 토큰 처리 ===
+    원본: hello unknown
+    복원: hello [UNK]
+
+WhitespaceTokenizerTest > Unknown 토큰 처리 PASSED
+
+WhitespaceTokenizerTest > 다중 공백 처리 PASSED
+
+WhitespaceTokenizerTest > 대소문자 구분 확인 (한계) STANDARD_OUT
+
+    === 대소문자 구분 (한계) ===
+    'Hello' -> [2]
+    'hello' -> [0] (UNK)
+
+WhitespaceTokenizerTest > 대소문자 구분 확인 (한계) PASSED
+
+WhitespaceTokenizerTest > 한글 텍스트 토큰화: 오늘은 날씨가 좋다 STANDARD_OUT
+
+    === 한글 토큰화 예시 ===
+    원본 텍스트: 오늘은 날씨가 좋다
+    토큰 ID: [2, 3, 1]
+    복원 텍스트: 오늘은 날씨가 좋다
+    Vocabulary 크기: 6
+      '오늘은' -> ID 2
+      '날씨가' -> ID 3
+      '좋다' -> ID 1
+
+WhitespaceTokenizerTest > 한글 텍스트 토큰화: 오늘은 날씨가 좋다 PASSED
+
+WhitespaceTokenizerTest > 구두점 처리 안 됨 (한계) STANDARD_OUT
+
+    === 구두점 처리 안 됨 (한계) ===
+    'Hello' -> [2]
+    'Hello,' -> [0] (UNK)
+
+WhitespaceTokenizerTest > 구두점 처리 안 됨 (한계) PASSED
+
+WhitespaceTokenizerTest > 기본 encode/decode round-trip 테스트 PASSED
+
+BUILD SUCCESSFUL in 662ms
+6 actionable tasks: 4 executed, 2 up-to-date

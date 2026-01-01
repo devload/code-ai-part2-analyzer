@@ -1,0 +1,80 @@
+> Task :clean
+> Task :mini-ai-cli:clean
+> Task :mini-ai-core:clean
+> Task :mini-ai-model-ngram:clean
+> Task :mini-ai-server:clean
+> Task :mini-ai-tokenizer-simple:clean
+> Task :compileJava NO-SOURCE
+> Task :processResources NO-SOURCE
+> Task :classes UP-TO-DATE
+> Task :jar
+> Task :assemble
+> Task :compileTestJava NO-SOURCE
+> Task :processTestResources NO-SOURCE
+> Task :testClasses UP-TO-DATE
+> Task :test NO-SOURCE
+> Task :check UP-TO-DATE
+> Task :build
+> Task :mini-ai-core:compileJava
+> Task :mini-ai-core:processResources NO-SOURCE
+> Task :mini-ai-core:classes
+> Task :mini-ai-core:jar
+> Task :mini-ai-cli:compileJava NO-SOURCE
+> Task :mini-ai-cli:processResources NO-SOURCE
+> Task :mini-ai-cli:classes UP-TO-DATE
+> Task :mini-ai-cli:jar
+> Task :mini-ai-cli:startScripts
+> Task :mini-ai-cli:distTar
+> Task :mini-ai-cli:distZip
+> Task :mini-ai-cli:assemble
+> Task :mini-ai-cli:compileTestJava NO-SOURCE
+> Task :mini-ai-cli:processTestResources NO-SOURCE
+> Task :mini-ai-cli:testClasses UP-TO-DATE
+> Task :mini-ai-cli:test NO-SOURCE
+> Task :mini-ai-cli:check UP-TO-DATE
+> Task :mini-ai-cli:build
+> Task :mini-ai-core:assemble
+> Task :mini-ai-core:compileTestJava NO-SOURCE
+> Task :mini-ai-core:processTestResources NO-SOURCE
+> Task :mini-ai-core:testClasses UP-TO-DATE
+> Task :mini-ai-core:test NO-SOURCE
+> Task :mini-ai-core:check UP-TO-DATE
+> Task :mini-ai-core:build
+> Task :mini-ai-tokenizer-simple:compileJava NO-SOURCE
+> Task :mini-ai-tokenizer-simple:processResources NO-SOURCE
+> Task :mini-ai-tokenizer-simple:classes UP-TO-DATE
+> Task :mini-ai-tokenizer-simple:jar
+> Task :mini-ai-model-ngram:compileJava NO-SOURCE
+> Task :mini-ai-model-ngram:processResources NO-SOURCE
+> Task :mini-ai-model-ngram:classes UP-TO-DATE
+> Task :mini-ai-model-ngram:jar
+> Task :mini-ai-model-ngram:assemble
+> Task :mini-ai-model-ngram:compileTestJava NO-SOURCE
+> Task :mini-ai-model-ngram:processTestResources NO-SOURCE
+> Task :mini-ai-model-ngram:testClasses UP-TO-DATE
+> Task :mini-ai-model-ngram:test NO-SOURCE
+> Task :mini-ai-model-ngram:check UP-TO-DATE
+> Task :mini-ai-model-ngram:build
+> Task :mini-ai-server:compileJava NO-SOURCE
+> Task :mini-ai-server:processResources NO-SOURCE
+> Task :mini-ai-server:classes UP-TO-DATE
+> Task :mini-ai-server:resolveMainClassName
+> Task :mini-ai-server:bootJar SKIPPED
+> Task :mini-ai-server:jar
+> Task :mini-ai-server:assemble
+> Task :mini-ai-server:compileTestJava NO-SOURCE
+> Task :mini-ai-server:processTestResources NO-SOURCE
+> Task :mini-ai-server:testClasses UP-TO-DATE
+> Task :mini-ai-server:test NO-SOURCE
+> Task :mini-ai-server:check UP-TO-DATE
+> Task :mini-ai-server:build
+> Task :mini-ai-tokenizer-simple:assemble
+> Task :mini-ai-tokenizer-simple:compileTestJava NO-SOURCE
+> Task :mini-ai-tokenizer-simple:processTestResources NO-SOURCE
+> Task :mini-ai-tokenizer-simple:testClasses UP-TO-DATE
+> Task :mini-ai-tokenizer-simple:test NO-SOURCE
+> Task :mini-ai-tokenizer-simple:check UP-TO-DATE
+> Task :mini-ai-tokenizer-simple:build
+
+BUILD SUCCESSFUL in 617ms
+17 actionable tasks: 17 executed

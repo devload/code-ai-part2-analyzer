@@ -1,0 +1,123 @@
+확장 설계 검증 - Step 7
+========================================
+
+Step 7은 문서 중심 단계로, Trigram 확장을 위한 "설계 자리"를 확보합니다.
+실제 구현은 하지 않지만, 코드 구조가 확장 가능함을 검증합니다.
+
+1. 현재 프로젝트 구조 확인
+========================================
+
+$ tree mini-ai-model-ngram/src/main/java
+mini-ai-model-ngram/src/main/java/
+└── com/miniai/model/
+    ├── BigramArtifact.java     ← Bigram 학습 결과
+    ├── BigramTrainer.java      ← Bigram 학습기
+    ├── BigramModel.java        ← Bigram 모델
+    ├── Sampler.java            ← 토큰 샘플링 (공통)
+    └── [데모 파일들...]
+
+✅ 현재는 Bigram만 구현됨
+
+
+2. 인터페이스 확장 가능성 확인
+========================================
+
+$ cat mini-ai-core/src/main/java/com/miniai/core/model/LanguageModel.java
+
+public interface LanguageModel {
+    GenerateResponse generate(GenerateRequest request);
+    String modelName();
+}
+
+✅ BigramModel implements LanguageModel
+✅ TrigramModel implements LanguageModel  ← 추가 가능!
+
+
+$ cat mini-ai-core/src/main/java/com/miniai/core/model/Trainer.java
+
+public interface Trainer {
+    void train(Path corpusPath, Path outputPath);
+    String trainerName();
+}
+
+✅ BigramTrainer implements Trainer
+✅ TrigramTrainer implements Trainer  ← 추가 가능!
+
+
+3. Artifact 확장 포인트 확인
+========================================
+
+BigramArtifact.Metadata 구조:
+{
+  "modelType": "bigram",        ← "trigram"으로 확장 가능
+  "tokenizerType": "whitespace",
+  "vocabSize": 56,
+  "totalTokens": 103,
+  "totalBigrams": 102,
+  "trainedAt": "2026-01-01T14:47:30.123Z"
+}
+
+Trigram 확장 시 추가 가능 필드:
+  - "backoffWeights": { ... }
+  - "interpolation": { "lambda1": 0.5, "lambda2": 0.3, "lambda3": 0.2 }
+  - "smoothingMethod": "kneser-ney"
+
+✅ Metadata가 확장 가능한 구조!
+
+
+4. 확장 시나리오 (가상)
+========================================
+
+# Trigram 구현 시 추가될 파일들 (실제 구현 X):
+
+mini-ai-model-ngram/
+├── ngram/
+│   ├── BigramArtifact.java      ← 기존
+│   ├── BigramTrainer.java       ← 기존
+│   ├── BigramModel.java         ← 기존
+│   ├── TrigramArtifact.java     ← 추가 예정
+│   ├── TrigramTrainer.java      ← 추가 예정
+│   └── TrigramModel.java        ← 추가 예정
+├── smoothing/
+│   ├── BackoffStrategy.java     ← 추가 예정
+│   └── InterpolationStrategy.java ← 추가 예정
+└── Sampler.java                 ← 공통 유지
+
+
+5. 확장 로드맵 확인
+========================================
+
+Phase 1: Trigram 기본
+  - TrigramArtifact (3-gram counts)
+  - TrigramTrainer (n-2 루프)
+  - TrigramModel (2개 이전 토큰 참조)
+
+Phase 2: 희소성 처리
+  - Backoff (Trigram → Bigram → Unigram)
+  - Interpolation (가중 평균)
+  - Smoothing (Laplace, Kneser-Ney)
+
+Phase 3: 고급 기능
+  - Variable-length N-gram
+  - Neural N-gram (FFNN)
+  - Attention 메커니즘
+
+
+6. DoD 검증
+========================================
+
+✅ 확장 포인트 문서화 완료 (docs/STEP-07.md)
+✅ Trigram 중요성 설명 완료
+✅ 확장 로드맵 작성 완료
+✅ 코드 인터페이스가 확장 가능한 구조
+
+========================================
+📚 Step 7 완료!
+
+이 단계에서 배운 것:
+- 인터페이스 기반 설계의 중요성
+- "확장 가능한 구조"의 실제 의미
+- Bigram → Trigram 확장 경로
+
+실제 Trigram 구현은 다음 Phase에서 진행 가능!
+========================================

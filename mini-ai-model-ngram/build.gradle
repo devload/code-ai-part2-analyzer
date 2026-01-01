@@ -1,0 +1,24 @@
+// mini-ai-model-ngram: N-gram 모델 구현체
+
+plugins {
+    id 'application'
+}
+
+application {
+    mainClass = 'com.miniai.model.UsageDemo'
+}
+
+dependencies {
+    implementation project(':mini-ai-core')
+    implementation project(':mini-ai-tokenizer-simple')
+
+    // JSON 처리를 위한 Gson
+    implementation 'com.google.code.gson:gson:2.10.1'
+}
+
+test {
+    testLogging {
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+        showStandardStreams = true
+    }
+}
