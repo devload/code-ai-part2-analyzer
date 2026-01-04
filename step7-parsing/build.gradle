@@ -1,0 +1,14 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+description = 'STEP 7: 파싱 - 코드를 어떻게 읽는가'
+
+application {
+    mainClass = 'com.aiprocess.step7.ParsingDemo'
+}
+
+dependencies {
+    implementation 'com.github.javaparser:javaparser-core:3.25.8'
+}

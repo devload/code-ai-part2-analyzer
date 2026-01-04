@@ -1,0 +1,21 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+description = 'Code Analysis Pipeline - 코드 분석 파이프라인 통합'
+
+application {
+    mainClass = 'com.aiprocess.pipeline.CodePipelineDemo'
+}
+
+dependencies {
+    implementation project(':step7-parsing')
+    implementation project(':step8-ast')
+    implementation project(':step9-semantics')
+    implementation project(':step10-pattern')
+    implementation project(':step11-detection')
+    implementation project(':step12-scoring')
+    implementation 'com.github.javaparser:javaparser-core:3.25.8'
+    implementation 'com.github.javaparser:javaparser-symbol-solver-core:3.25.8'
+}

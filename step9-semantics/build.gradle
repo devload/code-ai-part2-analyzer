@@ -1,0 +1,17 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+description = 'STEP 9: 의미 분석 - 변수/타입을 어떻게 추적하는가'
+
+application {
+    mainClass = 'com.aiprocess.step9.SemanticsDemo'
+}
+
+dependencies {
+    implementation project(':step7-parsing')
+    implementation project(':step8-ast')
+    implementation 'com.github.javaparser:javaparser-core:3.25.8'
+    implementation 'com.github.javaparser:javaparser-symbol-solver-core:3.25.8'
+}

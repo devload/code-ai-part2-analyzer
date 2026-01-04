@@ -1,0 +1,15 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+description = 'STEP 8: AST - 코드의 구조를 어떻게 파악하는가'
+
+application {
+    mainClass = 'com.aiprocess.step8.ASTDemo'
+}
+
+dependencies {
+    implementation project(':step7-parsing')
+    implementation 'com.github.javaparser:javaparser-core:3.25.8'
+}

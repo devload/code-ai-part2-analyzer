@@ -1,595 +1,333 @@
-# STEP 10: AST 기반 코드 분석 (JavaParser)
+# STEP 10: 코드에서 나는 냄새 - 패턴 매칭
 
-> **목표**: 정규표현식의 한계를 넘어 AST(Abstract Syntax Tree) 기반 정확한 코드 분석
-> **핵심 기술**: JavaParser, Visitor 패턴, 순환 복잡도 계산
+> 코드가 문법적으로 맞아도, "뭔가 이상한" 코드가 있어요.
+> 당장 에러는 아닌데 유지보수하기 힘든 코드. 이런 걸 **코드 스멜(Code Smell)**이라고 불러요.
 
 ---
 
-## 1. 왜 AST인가?
+## 코드 스멜이 뭔데?
 
-### 정규표현식 vs AST
+코드 스멜 = 나쁜 코드의 "냄새"
 
-| 구분 | 정규표현식 (STEP-09) | AST (STEP-10) |
-|------|---------------------|---------------|
-| **정확도** | 오탐 가능 | 정확한 구문 분석 |
-| **주석 처리** | 주석 내 코드도 감지 | 주석 제외 |
-| **중첩 분석** | 정확한 깊이 파악 어려움 | 정확한 트리 구조 |
-| **타입 정보** | 불가능 | 가능 (Symbol Solver) |
-| **성능** | 빠름 | 상대적으로 느림 |
-| **구현 복잡도** | 단순 | 복잡 |
+냉장고 안에서 이상한 냄새가 나면 뭔가 상했다는 신호잖아요. 코드도 마찬가지예요.
 
-### 실제 예시
+```
+코드 스멜 예시:
+├─ 긴 메서드 (30줄 이상)
+├─ 너무 많은 매개변수 (5개 이상)
+├─ 깊은 중첩 (if 안에 if 안에 if...)
+├─ 중복 코드
+└─ 만능 클래스 (God Class)
+```
 
-```java
-// 정규표현식은 이것도 감지 (오탐)
-// if (password != null) { return password; }
+이런 코드들은 당장 에러는 안 나지만, 나중에 문제가 생길 확률이 높아요.
 
-// AST는 주석을 무시하고 실제 코드만 분석
-String password = "secret";  // ← 이것만 감지
+---
+
+## 패턴 매칭의 흐름
+
+우리가 AST를 탐색하면서 "이 패턴이 있나?" 확인하는 거예요.
+
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│   AST        │     │   패턴       │     │   결과       │
+│   분석       │ --> │   매칭       │ --> │   리포트     │
+│              │     │              │     │              │
+│ 구조 파악    │     │ 스멜 감지    │     │ 이슈 목록    │
+└──────────────┘     └──────────────┘     └──────────────┘
 ```
 
 ---
 
-## 2. AST 구조 이해
+## 대표적인 코드 스멜들
 
-### Java 코드의 AST 변환
+### 1. 긴 메서드 (Long Method)
 
 ```java
-public class User {
-    private String name;
-
-    public String getName() {
-        return name;
-    }
+public void processOrder(Order order) {
+    // ... 50줄의 코드 ...
+    // 이 메서드가 뭘 하는지 이해하려면 5분은 걸림
 }
 ```
 
-**AST 트리:**
-```
-CompilationUnit
-└── ClassOrInterfaceDeclaration [User]
-    ├── FieldDeclaration
-    │   └── VariableDeclarator [name: String]
-    └── MethodDeclaration [getName]
-        └── BlockStmt
-            └── ReturnStmt
-                └── NameExpr [name]
-```
+30줄이 넘어가면 **"쪼개야 할 때"**예요.
 
-### 주요 AST 노드 타입
-
-| 노드 타입 | 설명 | 예시 |
-|-----------|------|------|
-| `CompilationUnit` | 파일 전체 | `.java` 파일 |
-| `ClassOrInterfaceDeclaration` | 클래스/인터페이스 | `class User` |
-| `MethodDeclaration` | 메서드 선언 | `public void save()` |
-| `FieldDeclaration` | 필드 선언 | `private int count` |
-| `IfStmt` | if 문 | `if (x > 0)` |
-| `ForStmt` / `ForEachStmt` | for 루프 | `for (int i...)` |
-| `MethodCallExpr` | 메서드 호출 | `list.add(item)` |
-| `BinaryExpr` | 이항 연산 | `a + b`, `x && y` |
-
----
-
-## 3. 아키텍처
-
-### 모듈 구조
-
-```
-code-ai-analyzer/
-└── src/main/java/com/codeai/analyzer/
-    ├── CodeAnalyzer.java           # 정규식 기반 (STEP-09)
-    ├── RefactoringSuggester.java   # 리팩토링 제안
-    └── ast/
-        └── ASTAnalyzer.java        # 🆕 AST 기반 분석
-```
-
-### 클래스 다이어그램
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        ASTAnalyzer                          │
-├─────────────────────────────────────────────────────────────┤
-│ - parser: JavaParser                                        │
-│ - issues: List<ASTIssue>                                    │
-│ - metrics: ASTMetrics                                       │
-├─────────────────────────────────────────────────────────────┤
-│ + analyze(code: String): ASTAnalysisResult                  │
-│ - collectMetrics(cu: CompilationUnit)                       │
-│ - detectCodeSmells(cu)                                      │
-│ - detectSecurityIssues(cu)                                  │
-│ - checkBestPractices(cu)                                    │
-│ - calculateCyclomaticComplexity(method): int                │
-│ - calculateMaxNestingDepth(method): int                     │
-└─────────────────────────────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────────────────────────────┐
-│                     ASTAnalysisResult                       │
-├─────────────────────────────────────────────────────────────┤
-│ + issues: List<ASTIssue>                                    │
-│ + metrics: ASTMetrics                                       │
-│ + parseSuccess: boolean                                     │
-│ + formatReport(minSeverity): String                         │
-└─────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────┐
-│                       ASTMetrics                            │
-├─────────────────────────────────────────────────────────────┤
-│ + totalLines: int                                           │
-│ + classCount: int                                           │
-│ + methodCount: int                                          │
-│ + fieldCount: int                                           │
-│ + totalComplexity: int                                      │
-│ + avgMethodLength: int                                      │
-│ + methodComplexities: Map<String, Integer>                  │
-└─────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 4. 순환 복잡도 (Cyclomatic Complexity)
-
-### 개념
-
-**McCabe's Cyclomatic Complexity**는 프로그램의 복잡도를 측정하는 지표입니다.
-
-```
-CC = E - N + 2P
-
-E = 엣지 수 (실행 경로)
-N = 노드 수 (코드 블록)
-P = 연결된 컴포넌트 수 (보통 1)
-```
-
-### 간단한 계산법
-
-```
-CC = 1 + (분기점 개수)
-
-분기점:
-- if, else if
-- for, while, do-while
-- switch case
-- catch
-- && (AND)
-- || (OR)
-- ? (삼항 연산자)
-```
-
-### 예시
+### 2. 매개변수가 너무 많음
 
 ```java
-public void process(int x) {     // +1 (기본)
-    if (x > 0) {                  // +1
-        for (int i = 0; i < x; i++) {  // +1
-            if (i % 2 == 0) {     // +1
-                // ...
+public void createUser(String name, String email, String phone,
+                       String address, String city, String zipCode) {
+    // 매개변수가 6개? 뭐가 뭔지 헷갈려...
+}
+```
+
+4개가 넘으면 **Parameter Object** 패턴을 고려하세요.
+
+### 3. 깊은 중첩
+
+```java
+if (user != null) {
+    if (user.isActive()) {
+        if (user.hasPermission()) {
+            if (user.getRole().equals("ADMIN")) {
+                // 4단계 중첩... 이해하기 힘들어요
             }
         }
-    } else if (x < 0) {           // +1
-        // ...
     }
 }
-// 총 CC = 5
 ```
 
-### 복잡도 기준
+3단계가 넘으면 **Early Return**으로 바꾸세요:
 
-| CC 값 | 위험도 | 설명 |
-|-------|--------|------|
-| 1-5 | ✅ 낮음 | 단순하고 테스트하기 쉬움 |
-| 6-10 | ⚠️ 중간 | 약간 복잡, 주의 필요 |
-| 11-20 | ❌ 높음 | 복잡, 리팩토링 권장 |
-| 21+ | 🚨 매우 높음 | 테스트 어려움, 반드시 분리 |
+```java
+if (user == null) return;
+if (!user.isActive()) return;
+if (!user.hasPermission()) return;
+if (!user.getRole().equals("ADMIN")) return;
+
+// 핵심 로직
+```
+
+### 4. 빈 catch 블록
+
+```java
+try {
+    riskyOperation();
+} catch (Exception e) {
+    // 아무것도 안 함... 에러 무시??
+}
+```
+
+에러를 삼키면 나중에 디버깅이 지옥이에요.
+
+### 5. 매직 넘버
+
+```java
+if (age > 18) {  // 18이 뭐야?
+if (timeout > 86400) {  // 86400?? 뭔 숫자야?
+```
+
+상수로 정의하면 의미가 명확해져요:
+
+```java
+private static final int ADULT_AGE = 18;
+private static final int SECONDS_PER_DAY = 86400;
+```
 
 ---
 
-## 5. 구현 상세
+## 코드로 구현하기
 
-### 5.1 JavaParser 설정
-
-```java
-public ASTAnalyzer() {
-    // Java 17 지원 (Text Block, Record, Sealed Class 등)
-    ParserConfiguration config = new ParserConfiguration();
-    config.setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17);
-    this.parser = new JavaParser(config);
-}
-```
-
-### 5.2 순환 복잡도 계산
+AST를 탐색하면서 패턴을 찾아볼게요:
 
 ```java
-private int calculateCyclomaticComplexity(MethodDeclaration method) {
-    int complexity = 1; // 기본값
+public class PatternMatcher {
+    private final List<CodeSmell> detectedSmells = new ArrayList<>();
 
-    // if 문
-    complexity += method.findAll(IfStmt.class).size();
+    private static final int MAX_METHOD_LENGTH = 30;
+    private static final int MAX_PARAMETERS = 4;
+    private static final int MAX_NESTING_DEPTH = 3;
 
-    // for 루프
-    complexity += method.findAll(ForStmt.class).size();
-    complexity += method.findAll(ForEachStmt.class).size();
+    public List<CodeSmell> findSmells(CompilationUnit cu) {
+        detectLongMethods(cu);
+        detectTooManyParameters(cu);
+        detectDeepNesting(cu);
+        detectEmptyCatch(cu);
+        detectMagicNumbers(cu);
 
-    // while 루프
-    complexity += method.findAll(WhileStmt.class).size();
-    complexity += method.findAll(DoStmt.class).size();
-
-    // switch case
-    complexity += method.findAll(SwitchEntry.class).stream()
-        .filter(se -> !se.getLabels().isEmpty())
-        .count();
-
-    // catch 블록
-    complexity += method.findAll(CatchClause.class).size();
-
-    // 논리 연산자 (&&, ||)
-    complexity += method.findAll(BinaryExpr.class).stream()
-        .filter(be -> be.getOperator() == BinaryExpr.Operator.AND ||
-                     be.getOperator() == BinaryExpr.Operator.OR)
-        .count();
-
-    // 삼항 연산자
-    complexity += method.findAll(ConditionalExpr.class).size();
-
-    return complexity;
-}
-```
-
-### 5.3 중첩 깊이 계산 (Visitor 패턴)
-
-```java
-private static class NestingDepthVisitor extends VoidVisitorAdapter<int[]> {
-    private int currentDepth = 0;
-
-    @Override
-    public void visit(IfStmt n, int[] maxDepth) {
-        currentDepth++;
-        maxDepth[0] = Math.max(maxDepth[0], currentDepth);
-        super.visit(n, maxDepth);  // 자식 노드 방문
-        currentDepth--;
+        return detectedSmells;
     }
 
-    @Override
-    public void visit(ForStmt n, int[] maxDepth) {
-        currentDepth++;
-        maxDepth[0] = Math.max(maxDepth[0], currentDepth);
-        super.visit(n, maxDepth);
-        currentDepth--;
-    }
-    // WhileStmt, TryStmt 등도 동일하게 처리
-}
-```
+    /**
+     * 긴 메서드 감지
+     */
+    private void detectLongMethods(CompilationUnit cu) {
+        cu.findAll(MethodDeclaration.class).forEach(method -> {
+            int lines = method.getRange()
+                .map(r -> r.end.line - r.begin.line + 1)
+                .orElse(0);
 
-### 5.4 코드 스멜 감지
-
-```java
-private void detectCodeSmells(CompilationUnit cu) {
-    // 1. 긴 메서드 (>30줄)
-    cu.findAll(MethodDeclaration.class).forEach(method -> {
-        int lines = method.getRange()
-            .map(r -> r.end.line - r.begin.line + 1)
-            .orElse(0);
-        if (lines > 30) {
-            issues.add(new ASTIssue(
-                Severity.WARNING,
-                "LONG_METHOD",
-                "메서드 '" + method.getNameAsString() + "'이 너무 깁니다",
-                "Extract Method 리팩토링을 고려하세요.",
-                method.getBegin().map(p -> p.line).orElse(0)
-            ));
-        }
-    });
-
-    // 2. 빈 catch 블록
-    cu.findAll(CatchClause.class).forEach(catchClause -> {
-        if (catchClause.getBody().getStatements().isEmpty()) {
-            issues.add(new ASTIssue(
-                Severity.WARNING,
-                "EMPTY_CATCH",
-                "빈 catch 블록이 있습니다",
-                "최소한 로깅을 추가하세요.",
-                catchClause.getBegin().map(p -> p.line).orElse(0)
-            ));
-        }
-    });
-
-    // 3. 사용되지 않는 private 메서드
-    Set<String> calledMethods = new HashSet<>();
-    cu.findAll(MethodCallExpr.class).forEach(call ->
-        calledMethods.add(call.getNameAsString())
-    );
-
-    cu.findAll(MethodDeclaration.class).stream()
-        .filter(m -> m.isPrivate())
-        .filter(m -> !calledMethods.contains(m.getNameAsString()))
-        .forEach(method -> {
-            issues.add(new ASTIssue(
-                Severity.INFO,
-                "UNUSED_METHOD",
-                "private 메서드 '" + method.getNameAsString() + "'가 사용되지 않습니다",
-                "불필요한 코드는 삭제하세요.",
-                method.getBegin().map(p -> p.line).orElse(0)
-            ));
+            if (lines > MAX_METHOD_LENGTH) {
+                detectedSmells.add(new CodeSmell(
+                    "LONG_METHOD",
+                    "메서드 '" + method.getNameAsString() + "'가 너무 깁니다 (" + lines + "줄)",
+                    "20줄 이하로 분리하세요"
+                ));
+            }
         });
+    }
+
+    /**
+     * 빈 catch 블록 감지
+     */
+    private void detectEmptyCatch(CompilationUnit cu) {
+        cu.findAll(CatchClause.class).forEach(catchClause -> {
+            if (catchClause.getBody().getStatements().isEmpty()) {
+                detectedSmells.add(new CodeSmell(
+                    "EMPTY_CATCH",
+                    "빈 catch 블록이 있습니다",
+                    "최소한 로깅을 추가하세요"
+                ));
+            }
+        });
+    }
 }
 ```
 
-### 5.5 보안 취약점 감지
+`findAll()`로 특정 노드를 찾고, 조건을 체크하는 패턴이에요.
+
+---
+
+## 실제로 나쁜 코드 분석해보기
+
+이 코드를 분석해볼게요:
 
 ```java
-private void detectSecurityIssues(CompilationUnit cu) {
-    // 하드코딩된 비밀정보
-    cu.findAll(FieldDeclaration.class).forEach(field -> {
-        field.getVariables().forEach(var -> {
-            String name = var.getNameAsString().toLowerCase();
-            if (name.contains("password") || name.contains("secret") ||
-                name.contains("apikey") || name.contains("token")) {
+public class BadExample {
+    private String a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p;
 
-                var.getInitializer().ifPresent(init -> {
-                    if (init instanceof StringLiteralExpr) {
-                        issues.add(new ASTIssue(
-                            Severity.CRITICAL,
-                            "HARDCODED_SECRET",
-                            "하드코딩된 비밀 정보: " + var.getNameAsString(),
-                            "환경 변수나 설정 파일에서 읽어오세요.",
-                            var.getBegin().map(p -> p.line).orElse(0)
-                        ));
+    public void longMethod(String p1, String p2, String p3,
+                           String p4, String p5, String p6) {
+        if (p1 != null) {
+            if (p2 != null) {
+                if (p3 != null) {
+                    if (p4 != null) {
+                        // 깊은 중첩
+                        int timeout = 86400;  // 매직 넘버
+                        try {
+                            process();
+                        } catch (Exception e) {
+                            // 빈 catch
+                        }
                     }
-                });
+                }
             }
-        });
-    });
-}
-```
-
----
-
-## 6. CLI 사용법
-
-### 기본 사용
-
-```bash
-code-ai ast-review src/main/java/MyClass.java
-```
-
-### 심각도 필터링
-
-```bash
-# WARNING 이상만 표시
-code-ai ast-review src/MyClass.java --severity WARNING
-
-# CRITICAL만 표시 (보안 이슈)
-code-ai ast-review src/MyClass.java --severity CRITICAL
-```
-
-### 메서드별 복잡도 상세
-
-```bash
-code-ai ast-review src/MyClass.java --metrics
-```
-
-### 출력 예시
-
-```
-🌳 AST 기반 코드 리뷰 시작...
-  파일: src/main/java/MyClass.java
-  분석기: JavaParser (AST)
-
-============================================================
-📋 AST 기반 코드 리뷰 결과
-============================================================
-
-📊 AST 메트릭:
-   총 라인: 419
-   클래스: 2개 | 메서드: 13개 | 필드: 7개
-   총 순환 복잡도: 29 (평균: 2.2)
-   평균 메서드 길이: 25줄
-   메서드별 복잡도:
-     - suggestSimplifyConditionals: 4
-     - suggestOptionalUsage: 3
-     - suggestBuilderPattern: 3
-
-🔍 발견된 이슈: 4개
-   🚨 Critical: 0 | ❌ Error: 0 | ⚠️ Warning: 4 | 💡 Info: 0
-
-------------------------------------------------------------
-⚠️ [LONG_METHOD] Line 39: 메서드 'suggestOptionalUsage'이 너무 깁니다 (50줄)
-   → 20줄 이하로 분리하세요. Extract Method 리팩토링을 고려하세요.
-
-------------------------------------------------------------
-📈 코드 품질 점수: 80/100 ✅ 좋음
-
-📊 메서드별 순환 복잡도:
-   ✅ suggestSimplifyConditionals: 4
-   ✅ suggestOptionalUsage: 3
-   ⚠️ complexMethod: 8
-   ❌ veryComplexMethod: 15
-```
-
----
-
-## 7. 정규식 vs AST 비교 실험
-
-### 테스트 코드
-
-```java
-public class BadCode {
-    // 주석: password = "test123"
-    private String password = "admin123";
-
-    public void process() {
-        // if (x != null) 이건 주석
-        if (data != null) {
-            data.doSomething();
         }
     }
 }
 ```
 
-### 결과 비교
+분석 결과:
 
-| 항목 | 정규식 (review) | AST (ast-review) |
-|------|-----------------|------------------|
-| 주석 내 password | ⚠️ 감지됨 (오탐) | ✅ 무시됨 |
-| 실제 password | ✅ 감지됨 | ✅ 감지됨 |
-| 주석 내 if 문 | ⚠️ 감지됨 (오탐) | ✅ 무시됨 |
-| 실제 if 문 | ✅ 감지됨 | ✅ 감지됨 |
-| 중첩 깊이 | 부정확할 수 있음 | ✅ 정확함 |
-| 순환 복잡도 | ❌ 계산 불가 | ✅ 정확한 계산 |
+```
+=== 코드 스멜 감지 결과 ===
+
+WARNING [GOD_CLASS] Line 1
+  클래스 'BadExample'가 너무 큽니다 (필드: 16개)
+  → 클래스를 분리하세요.
+
+WARNING [TOO_MANY_PARAMS] Line 4
+  메서드 'longMethod'의 매개변수가 너무 많습니다 (6개)
+  → Parameter Object 패턴을 고려하세요.
+
+WARNING [DEEP_NESTING] Line 4
+  메서드 'longMethod'의 중첩이 너무 깊습니다 (4레벨)
+  → Early return 또는 메서드 분리를 고려하세요.
+
+INFO [MAGIC_NUMBER] Line 11
+  매직 넘버 86400가 발견되었습니다
+  → 의미 있는 상수로 정의하세요.
+
+WARNING [EMPTY_CATCH] Line 14
+  빈 catch 블록이 있습니다
+  → 최소한 로깅을 추가하세요.
+
+총 5개의 코드 스멜 발견
+```
+
+한 눈에 문제가 보이죠?
 
 ---
 
-## 8. 감지 항목 정리
+## 감지할 수 있는 패턴들
 
 ### 코드 스멜
-
-| 코드 | 설명 | 심각도 |
-|------|------|--------|
-| `LONG_METHOD` | 30줄 초과 메서드 | ⚠️ WARNING |
-| `TOO_MANY_PARAMS` | 4개 초과 매개변수 | ⚠️ WARNING |
-| `DEEP_NESTING` | 3레벨 초과 중첩 | ⚠️ WARNING |
-| `EMPTY_CATCH` | 빈 catch 블록 | ⚠️ WARNING |
-| `GOD_CLASS` | 20+ 메서드 또는 15+ 필드 | ⚠️ WARNING |
-| `HIGH_COMPLEXITY` | CC > 10 | ⚠️ WARNING |
-| `UNUSED_METHOD` | 사용 안 되는 private 메서드 | 💡 INFO |
-
-### 보안 취약점
-
-| 코드 | 설명 | 심각도 |
-|------|------|--------|
-| `HARDCODED_SECRET` | 하드코딩된 비밀정보 | 🚨 CRITICAL |
-| `SQL_INJECTION` | 문자열 연결 SQL | 🚨 CRITICAL |
-| `INSECURE_RANDOM` | java.util.Random 사용 | 💡 INFO |
-| `SYSTEM_EXIT` | System.exit() 호출 | ⚠️ WARNING |
-
-### 베스트 프랙티스
-
-| 코드 | 설명 | 심각도 |
-|------|------|--------|
-| `STRING_COMPARE` | 문자열 == 비교 | ⚠️ WARNING |
-| `NAMING_CLASS` | 클래스명 규칙 위반 | 💡 INFO |
-| `NAMING_METHOD` | 메서드명 규칙 위반 | 💡 INFO |
-| `NAMING_CONSTANT` | 상수명 규칙 위반 | 💡 INFO |
-| `MAGIC_NUMBER` | 매직 넘버 | 💡 INFO |
-
----
-
-## 9. 의존성
-
-### build.gradle
-
-```gradle
-dependencies {
-    // JavaParser - AST 기반 코드 분석
-    implementation 'com.github.javaparser:javaparser-core:3.25.8'
-    implementation 'com.github.javaparser:javaparser-symbol-solver-core:3.25.8'
-}
-```
-
-### Symbol Solver (선택적)
-
-Symbol Solver를 사용하면 타입 해석이 가능합니다:
-
-```java
-// 타입 정보 없이
-MethodCallExpr call = ...;
-call.getNameAsString();  // "getName" (메서드명만)
-
-// Symbol Solver 사용 시
-call.resolve().getReturnType();  // "String" (반환 타입)
-call.resolve().getDeclaringType();  // "User" (선언 클래스)
-```
-
----
-
-## 10. 한계점 및 다음 단계
-
-### 현재 한계
-
-| 한계 | 설명 |
-|------|------|
-| 단일 파일 분석 | 프로젝트 전체 분석 불가 |
-| 타입 해석 미흡 | Symbol Solver 미사용 시 타입 정보 제한 |
-| 실시간 분석 불가 | IDE 통합 필요 |
-
-### 다음 단계
-
-| STEP | 제목 | 내용 |
+| 코드 | 설명 | 기준 |
 |------|------|------|
-| 11 | 멀티파일 분석 | 프로젝트 전체 스캔, 의존성 분석 |
-| 12 | Symbol Solver | 타입 해석, 메서드 호출 추적 |
-| 13 | AI 코드 리뷰 | CodeBERT/Transformer 통합 |
+| `LONG_METHOD` | 긴 메서드 | >30줄 |
+| `TOO_MANY_PARAMS` | 매개변수 과다 | >4개 |
+| `DEEP_NESTING` | 깊은 중첩 | >3레벨 |
+| `EMPTY_CATCH` | 빈 catch 블록 | 비어있음 |
+| `MAGIC_NUMBER` | 매직 넘버 | 리터럴 숫자 |
+| `GOD_CLASS` | 만능 클래스 | 메서드 >20 또는 필드 >15 |
+
+### 안티패턴
+| 코드 | 설명 |
+|------|------|
+| `STRING_CONCAT_LOOP` | 루프 안에서 String + 연결 |
+| `INSTANCEOF_CHAIN` | 연속 instanceof 체크 |
+| `RETURN_NULL` | null 반환 (Optional 권장) |
 
 ---
 
-## 11. 실습 과제
+## 새 패턴 추가하기
 
-### 과제 1: 새로운 코드 스멜 추가
-
-```java
-// 감지: 메서드 내 return 문이 5개 이상
-public String getValue(int type) {
-    if (type == 1) return "A";
-    if (type == 2) return "B";
-    if (type == 3) return "C";
-    if (type == 4) return "D";
-    return "E";  // 5개 return → 경고
-}
-```
-
-### 과제 2: 중복 코드 감지
+패턴 추가는 간단해요. 찾고 싶은 노드를 `findAll()`로 찾고, 조건을 체크하면 끝!
 
 ```java
-// 감지: 동일한 코드 블록이 2회 이상 등장
-void methodA() {
-    validate(input);
-    process(input);
-    save(input);
+/**
+ * System.out.println 사용 감지
+ */
+private void detectSystemOut(CompilationUnit cu) {
+    cu.findAll(MethodCallExpr.class).forEach(call -> {
+        if (call.toString().startsWith("System.out.print")) {
+            detectedSmells.add(new CodeSmell(
+                "SYSTEM_OUT",
+                "System.out 사용이 발견되었습니다",
+                "로깅 프레임워크(SLF4J 등)를 사용하세요"
+            ));
+        }
+    });
 }
-
-void methodB() {
-    validate(data);   // 동일 패턴!
-    process(data);
-    save(data);
-}
-```
-
-### 과제 3: 메서드 호출 그래프 생성
-
-```java
-// A.call() → B.process() → C.save()
-// 호출 관계를 그래프로 시각화
 ```
 
 ---
 
-## 12. 정리
+## 왜 정규표현식 대신 AST를 쓸까?
 
-### 학습 포인트
+정규표현식으로 `if`를 세면?
 
-1. **AST (Abstract Syntax Tree)**
-   - 코드를 트리 구조로 표현
-   - 정확한 구문 분석 가능
+```java
+/*
+if (password != null) {  // 주석 안의 if
+    return password;
+}
+*/
+String message = "if you want";  // 문자열 안의 if
+if (true) {  // 진짜 if
+```
 
-2. **Visitor 패턴**
-   - AST 순회의 표준 패턴
-   - 노드 타입별 처리 로직 분리
+정규표현식은 주석이나 문자열 안의 `if`도 세버려요. AST는 **진짜 코드만** 봅니다.
 
-3. **순환 복잡도**
-   - 코드 복잡도의 정량적 측정
-   - 테스트 용이성 지표
+---
 
-4. **JavaParser**
-   - Java 코드 파싱 라이브러리
-   - Java 17+ 문법 지원
+## 핵심 정리
 
-### CLI v5.0 명령어
+1. **코드 스멜** → 나쁜 코드의 징후 (에러는 아니지만 문제 암시)
+2. **패턴 매칭** → AST에서 특정 패턴을 찾아내는 것
+3. **findAll()** → 원하는 노드 타입을 전부 찾기
+4. **임계값** → 메서드 30줄, 매개변수 4개 등 기준 설정
+
+---
+
+## 다음 시간 예고
+
+코드 스멜은 "냄새"일 뿐이에요. 당장 문제는 아니죠.
+
+근데 진짜 **위험한** 코드가 있어요:
+- SQL Injection 취약점
+- 하드코딩된 비밀번호
+- Null Pointer 위험
+
+다음 STEP에서는 **진짜 버그와 보안 취약점을 찾는 방법**을 알아볼게요!
+
+---
+
+## 실습
 
 ```bash
-code-ai train       # 모델 학습
-code-ai complete    # 코드 자동완성
-code-ai review      # 정규식 기반 리뷰
-code-ai refactor    # 리팩토링 제안
-code-ai ast-review  # 🆕 AST 기반 리뷰
+cd code-ai-part2-analyzer
+../gradlew :step10-pattern:run
 ```
+
+여러분의 코드에서 코드 스멜을 찾아보세요. 몇 개나 발견되나요?

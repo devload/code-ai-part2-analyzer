@@ -1,0 +1,17 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+description = 'STEP 11: 이슈 탐지 - 버그/보안 문제를 어떻게 발견하는가'
+
+application {
+    mainClass = 'com.aiprocess.step11.DetectionDemo'
+}
+
+dependencies {
+    implementation project(':step7-parsing')
+    implementation project(':step8-ast')
+    implementation project(':step10-pattern')
+    implementation 'com.github.javaparser:javaparser-core:3.25.8'
+}

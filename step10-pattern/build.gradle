@@ -1,0 +1,16 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+description = 'STEP 10: 패턴 매칭 - 나쁜 코드를 어떻게 찾는가'
+
+application {
+    mainClass = 'com.aiprocess.step10.PatternDemo'
+}
+
+dependencies {
+    implementation project(':step7-parsing')
+    implementation project(':step8-ast')
+    implementation 'com.github.javaparser:javaparser-core:3.25.8'
+}

@@ -1,0 +1,18 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+description = 'STEP 12: 점수화 - 코드 품질을 어떻게 측정하는가'
+
+application {
+    mainClass = 'com.aiprocess.step12.ScoringDemo'
+}
+
+dependencies {
+    implementation project(':step7-parsing')
+    implementation project(':step8-ast')
+    implementation project(':step10-pattern')
+    implementation project(':step11-detection')
+    implementation 'com.github.javaparser:javaparser-core:3.25.8'
+}

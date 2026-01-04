@@ -1,5 +1,6 @@
-rootProject.name = 'code-ai'
+rootProject.name = 'ai-process-part2'
 
+// 기존 모듈 (Part 1에서 상속)
 include 'mini-ai-core'
 include 'mini-ai-tokenizer-simple'
 include 'code-ai-tokenizer'
@@ -7,5 +8,12 @@ include 'code-ai-analyzer'
 include 'mini-ai-model-ngram'
 include 'mini-ai-server'
 include 'mini-ai-cli'
-include 'code-ai-intellij'
-include 'code-ai-web'
+
+// 새로운 AI Process 단계별 모듈 (코드 이해)
+include 'step7-parsing'
+include 'step8-ast'
+include 'step9-semantics'
+include 'step10-pattern'
+include 'step11-detection'
+include 'step12-scoring'
+include 'code-pipeline'
