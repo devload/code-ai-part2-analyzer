@@ -65,3 +65,4 @@ AI 서비스에 필요한 데이터 분석 방법을 학습합니다. 코드를 
 ## 다음 단계
 
 - [Part 3: AI 서비스 통합](https://github.com/devload/code-ai-part3-service)
+- [Part 4: 고급 주제](https://github.com/devload/code-ai-part4-advanced)
