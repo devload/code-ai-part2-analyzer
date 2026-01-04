@@ -17,37 +17,37 @@
         │
         ▼
 ┌─────────────────────────────────────────────────────────┐
-│ STEP 7: 파싱 (Parsing)                                   │
+│ STEP 9: 파싱 (Parsing)                                   │
 │ 텍스트 → 구조화된 데이터 (CompilationUnit)                │
 └─────────────────────────────────────────────────────────┘
         │
         ▼
 ┌─────────────────────────────────────────────────────────┐
-│ STEP 8: AST 분석 (Abstract Syntax Tree)                  │
+│ STEP 10: AST 분석 (Abstract Syntax Tree)                 │
 │ 코드 구조 → 메트릭 (복잡도, 중첩 깊이, 라인 수)           │
 └─────────────────────────────────────────────────────────┘
         │
         ▼
 ┌─────────────────────────────────────────────────────────┐
-│ STEP 9: 의미 분석 (Semantic Analysis)                    │
+│ STEP 11: 의미 분석 (Semantic Analysis)                   │
 │ 변수 사용 추적, 타입 분석, 메서드 호출 관계               │
 └─────────────────────────────────────────────────────────┘
         │
         ▼
 ┌─────────────────────────────────────────────────────────┐
-│ STEP 10: 패턴 매칭 (Pattern Matching)                    │
+│ STEP 12: 패턴 매칭 (Pattern Matching)                    │
 │ 코드 스멜 탐지 (System.out, 빈 catch, 매직 넘버)          │
 └─────────────────────────────────────────────────────────┘
         │
         ▼
 ┌─────────────────────────────────────────────────────────┐
-│ STEP 11: 이슈 탐지 (Issue Detection)                     │
+│ STEP 13: 이슈 탐지 (Issue Detection)                     │
 │ 보안 취약점 탐지 (SQL Injection, 하드코딩 비밀)           │
 └─────────────────────────────────────────────────────────┘
         │
         ▼
 ┌─────────────────────────────────────────────────────────┐
-│ STEP 12: 점수화 (Scoring)                                │
+│ STEP 14: 점수화 (Scoring)                                │
 │ 6차원 품질 점수 → A~F 등급                               │
 └─────────────────────────────────────────────────────────┘
         │
@@ -57,16 +57,16 @@
 
 ---
 
-## 학습 단계 (STEP 7-12)
+## 학습 단계 (STEP 9-14)
 
 | STEP | 제목 | 핵심 질문 | 실행 명령 |
 |------|------|----------|----------|
-| 7 | 파싱 | 코드를 어떻게 읽는가? | `./gradlew :step7-parsing:run` |
-| 8 | AST 분석 | 코드의 구조를 어떻게 파악하는가? | `./gradlew :step8-ast:run` |
-| 9 | 의미 분석 | 변수/타입을 어떻게 추적하는가? | `./gradlew :step9-semantics:run` |
-| 10 | 패턴 매칭 | 나쁜 코드를 어떻게 찾는가? | `./gradlew :step10-pattern:run` |
-| 11 | 이슈 탐지 | 버그/보안 문제를 어떻게 발견하는가? | `./gradlew :step11-detection:run` |
-| 12 | 점수화 | 코드 품질을 어떻게 측정하는가? | `./gradlew :step12-scoring:run` |
+| 9 | 파싱 | 코드를 어떻게 읽는가? | `./gradlew :step9-parsing:run` |
+| 10 | AST 분석 | 코드의 구조를 어떻게 파악하는가? | `./gradlew :step10-ast:run` |
+| 11 | 의미 분석 | 변수/타입을 어떻게 추적하는가? | `./gradlew :step11-semantics:run` |
+| 12 | 패턴 매칭 | 나쁜 코드를 어떻게 찾는가? | `./gradlew :step12-pattern:run` |
+| 13 | 이슈 탐지 | 버그/보안 문제를 어떻게 발견하는가? | `./gradlew :step13-detection:run` |
+| 14 | 점수화 | 코드 품질을 어떻게 측정하는가? | `./gradlew :step14-scoring:run` |
 
 ---
 
@@ -79,8 +79,8 @@
 
 ### 데모 실행
 ```bash
-# STEP 12: 점수화 데모 (핵심)
-./gradlew :step12-scoring:run
+# STEP 14: 점수화 데모 (핵심)
+./gradlew :step14-scoring:run
 
 # 전체 코드 분석 파이프라인
 ./gradlew :code-pipeline:run
@@ -107,12 +107,12 @@
 
 ```
 code-ai-part2-analyzer/
-├── step7-parsing/             # 파싱
-├── step8-ast/                 # AST 분석
-├── step9-semantics/           # 의미 분석
-├── step10-pattern/            # 패턴 매칭
-├── step11-detection/          # 이슈 탐지
-├── step12-scoring/            # 점수화
+├── step9-parsing/             # 파싱
+├── step10-ast/                # AST 분석
+├── step11-semantics/          # 의미 분석
+├── step12-pattern/            # 패턴 매칭
+├── step13-detection/          # 이슈 탐지
+├── step14-scoring/            # 점수화
 ├── code-pipeline/             # 분석 파이프라인
 └── docs/                      # 학습 문서
 ```
@@ -121,7 +121,7 @@ code-ai-part2-analyzer/
 
 ## 탐지 가능한 이슈
 
-### 코드 스멜 (STEP 10)
+### 코드 스멜 (STEP 12)
 | 이슈 | 설명 | 심각도 |
 |------|------|--------|
 | SYSTEM_OUT | System.out.println 사용 | WARNING |
@@ -130,7 +130,7 @@ code-ai-part2-analyzer/
 | LONG_METHOD | 20줄 이상 메서드 | WARNING |
 | MISSING_BRACES | if문 중괄호 누락 | INFO |
 
-### 보안 이슈 (STEP 11)
+### 보안 이슈 (STEP 13)
 | 이슈 | 설명 | 심각도 |
 |------|------|--------|
 | SQL_INJECTION | 문자열 연결 SQL | CRITICAL |
@@ -139,7 +139,7 @@ code-ai-part2-analyzer/
 
 ---
 
-## 점수 체계 (STEP 12)
+## 점수 체계 (STEP 14)
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -233,4 +233,4 @@ MIT License
 
 ---
 
-**Version**: 2.0.0 | **STEP**: 7-12 | **Focus**: Code Analysis Process
+**Version**: 2.0.0 | **STEP**: 9-14 | **Focus**: Code Analysis Process

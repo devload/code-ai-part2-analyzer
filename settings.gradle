@@ -9,11 +9,11 @@ include 'mini-ai-model-ngram'
 include 'mini-ai-server'
 include 'mini-ai-cli'
 
-// 새로운 AI Process 단계별 모듈 (코드 이해)
-include 'step7-parsing'
-include 'step8-ast'
-include 'step9-semantics'
-include 'step10-pattern'
-include 'step11-detection'
-include 'step12-scoring'
+// AI Process 단계별 모듈 (STEP 9-14: 코드 분석)
+include 'step9-parsing'
+include 'step10-ast'
+include 'step11-semantics'
+include 'step12-pattern'
+include 'step13-detection'
+include 'step14-scoring'
 include 'code-pipeline'

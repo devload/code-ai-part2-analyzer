@@ -10,7 +10,7 @@ application {
 }
 
 dependencies {
-    implementation project(':step7-parsing')
-    implementation project(':step8-ast')
+    implementation project(':step9-parsing')
+    implementation project(':step10-ast')
     implementation 'com.github.javaparser:javaparser-core:3.25.8'
 }

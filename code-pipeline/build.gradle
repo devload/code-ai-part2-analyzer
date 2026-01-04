@@ -10,12 +10,12 @@ application {
 }
 
 dependencies {
-    implementation project(':step7-parsing')
-    implementation project(':step8-ast')
-    implementation project(':step9-semantics')
-    implementation project(':step10-pattern')
-    implementation project(':step11-detection')
-    implementation project(':step12-scoring')
+    implementation project(':step9-parsing')
+    implementation project(':step10-ast')
+    implementation project(':step11-semantics')
+    implementation project(':step12-pattern')
+    implementation project(':step13-detection')
+    implementation project(':step14-scoring')
     implementation 'com.github.javaparser:javaparser-core:3.25.8'
     implementation 'com.github.javaparser:javaparser-symbol-solver-core:3.25.8'
 }
